@@ -1,150 +1,266 @@
 # 🚀 FileDrop - Peer-to-Peer File Sharing
 
-FileDrop is a high-performance peer-to-peer file transfer web application built using WebRTC. It allows users to send files directly between devices without storing any data on a server.
+FileDrop is a high-performance peer-to-peer file transfer platform built using WebRTC, Next.js and TypeScript. It enables secure browser-to-browser file sharing without uploading files to any server.
 
-No uploads. No limits (except your bandwidth 😏). Just pure P2P transfer.
+No uploads. No cloud storage. No middleman. Just pure P2P transfer.
+
+---
+
+## 🌐 Live Demo
+
+### Frontend
+
+https://file-drop-inky.vercel.app/
+
+### Backend
+
+https://filedrop-production-b0ac.up.railway.app
 
 ---
 
 ## ✨ Features
 
-- 🔗 **Direct P2P Transfer** (WebRTC Data Channels)
-- 📦 **Chunked File Streaming (64KB chunks)** for efficient large file transfer
-- ⚡ **Zero Server Storage**
-- 🧠 **Backpressure Handling** using bufferedAmount control
-- 📊 **Real-time Upload & Download Progress**
-- 🧾 **Room-based Connection System**
-- 🧑‍🤝‍🧑 **2-Peer Secure Sessions**
-- ❌ **Transfer Abort & Recovery Handling**
-- 📥 **Native File Save (File System Access API + StreamSaver fallback)**
+- 🔗 Direct Peer-to-Peer File Transfer (WebRTC Data Channels)
+- 📦 Chunked File Streaming (64 KB chunks)
+- ⚡ Zero Server-Side File Storage
+- 🧠 BufferedAmount Backpressure Handling
+- 📊 Real-Time Upload & Download Progress Tracking
+- 🧾 Room-Based Connection System
+- 🧑‍🤝‍🧑 Secure Two-Peer Sessions
+- ❌ Transfer Abort & Error Handling
+- 📥 Native File Save Support
+- 🚀 Fully Deployed & Production Ready
+- 🌐 Browser-to-Browser Secure File Sharing
+
+---
+
+## 🏗️ Project Architecture
+
+```text
+                     +----------------------+
+                     |      Frontend        |
+                     |      Next.js         |
+                     |   (Hosted on Vercel) |
+                     +----------+-----------+
+                                |
+                                |
+                                v
+
+                     +----------------------+
+                     |   Signalling Server  |
+                     |   Node.js + WS       |
+                     | (Hosted on Railway)  |
+                     +----------+-----------+
+                                |
+                        SDP Exchange Only
+                                |
+                                v
+
+                     +----------------------+
+                     |      WebRTC P2P      |
+                     | Browser <--------> Browser
+                     +----------------------+
+                                |
+                                v
+
+                     Direct File Transfer
+                    (No Files Stored Anywhere)
+```
+
+---
+
+## ⚙️ How It Works
+
+1. User creates a room (random 10-character room ID).
+2. Another user joins using the same room ID.
+3. The signalling server exchanges SDP offers and answers.
+4. WebRTC establishes a direct peer connection.
+5. Files are split into 64 KB chunks.
+6. Chunks are streamed over WebRTC Data Channels.
+7. Receiver writes files directly to disk.
+
+> The signalling server is ONLY used to establish the connection. No file ever passes through the server.
 
 ---
 
 ## 🏗️ Tech Stack
 
 ### Frontend
+
 - Next.js (App Router)
 - TypeScript
-- TailwindCSS
+- Tailwind CSS
 - Framer Motion
 
-### Backend (Signaling Server)
+### Backend
+
 - Node.js
+- Express.js
 - WebSocket (ws)
-- Express
 
 ### Core Technologies
-- WebRTC (RTCPeerConnection + DataChannel)
+
+- WebRTC
+- RTCPeerConnection
+- RTCDataChannel
 - Streams API
 - StreamSaver.js
 
+### Deployment
+
+- Vercel
+- Railway
+
 ---
 
-## ⚙️ How It Works
+## 📸 Screenshots
 
-1. User creates a room (random 10-char ID)
-2. Second user joins using the same room ID
-3. WebSocket signaling server exchanges SDP (offer/answer)
-4. WebRTC connection is established
-5. File is:
-   - split into chunks (64KB)
-   - streamed over DataChannel
-6. Receiver writes directly to disk (no RAM explosion 💀)
+### Home Page
 
-> Signaling server is only used for connection setup — no file passes through it.
+![Home Page](./screenshots/01-home-page.png)
+
+---
+
+### Waiting For Peer
+
+![Waiting For Peer](./screenshots/02-awaiting-peer.png)
+
+---
+
+### Connected Session
+
+![Connected](./screenshots/03-connected.png)
+
+---
+
+### Incoming File Request
+
+![Incoming File](./screenshots/04-incoming-file-request.png)
+
+---
+
+### File Transfer Progress
+
+![Progress](./screenshots/05-file-transfer-progress.png)
 
 ---
 
 ## 📁 Project Structure
 
-client/
- ├── hooks/
- │   ├── useWebRTC.ts
- │   └── useFileTransfer.ts
- ├── components/
- │   ├── FileDropZone.tsx
- │   ├── TransferProgress.tsx
- │   ├── IncomingFileDialog.tsx
- │   └── ErrorModal.tsx
- └── app/
-
-server/
- └── server.ts
+```text
+FileDrop
+│
+├── client
+│   ├── app
+│   ├── components
+│   │
+│   ├── hooks
+│   │   ├── useWebRTC.ts
+│   │   └── useFileTransfer.ts
+│   │
+│   └── public
+│
+├── Server
+│   └── server.ts
+│
+└── screenshots
+```
 
 ---
 
 ## 🚀 Getting Started
 
-### 1. Clone the repo
+### Clone the Repository
 
-git clone https://github.com/kanishk1184/P2P-File-Share.git
-cd filedrop
+```bash
+git clone https://github.com/girish-xd/FileDrop.git
+```
 
 ---
 
-### 2. Setup Backend
+### Setup Backend
 
-cd server
+```bash
+cd Server
 npm install
 npm run dev
+```
 
 Server runs on:
+
+```text
 http://localhost:1908
+```
 
 ---
 
-### 3. Setup Frontend
+### Setup Frontend
 
+```bash
 cd client
 npm install
 npm run dev
+```
 
 ---
 
-### 4. Environment Variables
+## 🔐 Environment Variables
 
-Create `.env` in frontend:
+Create a `.env.local` file inside the client directory.
 
+```env
 NEXT_PUBLIC_BACKEND_URL=http://localhost:1908
-NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:1908
+```
+
+For production deployment:
+
+```env
+NEXT_PUBLIC_BACKEND_URL=https://filedrop-production-b0ac.up.railway.app
+```
 
 ---
 
-## 🧪 How to Use
+## 🧪 How To Use
 
-1. Open app in two devices
-2. Click **Create Room** on one
-3. Share room ID
-4. Join from second device
-5. Drag & drop file → Done ✅
+1. Open FileDrop on two devices.
+2. Click Create Room.
+3. Share the room ID.
+4. Join the room from the second device.
+5. Select or drag & drop any file.
+6. Accept the transfer request.
+7. Download completed. ✅
 
 ---
 
 ## ⚠️ Limitations
 
-- Only **2 peers per room**
-- Requires stable internet for WebRTC
-- Large files depend on network speed
+- Supports only two peers per room.
+- WebRTC connectivity depends on network conditions.
+- Extremely large file transfers depend on bandwidth and browser limitations.
 
 ---
 
 ## 💡 Future Improvements
 
-- Multi-peer rooms
-- Resume interrupted transfers
-- End-to-end encryption layer
-- File previews
-- Mobile optimization
+- Multi-peer file sharing.
+- Resume interrupted transfers.
+- End-to-end encryption layer.
+- File previews.
+- Mobile-first optimizations.
+- QR-based room sharing.
 
 ---
 
-## 🧑‍💻 Author
+## ⭐ Support
 
-Made with caffeine & questionable life choices ☕  
-by **Kanishk**
+If you liked the project, consider giving it a star.
 
 ---
 
-## ⭐ Give a Star
+<div align="center">
 
-If you liked this project, drop a ⭐ — helps more than you think!
+### Built after sacrificing sleep, sanity and several thousand AI tokens.🫩
+
+##### by Girish Jain🩷
+
+</div>
