@@ -17,20 +17,29 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    checkBackend();
-  }, []);
+    let ignore = false;
 
-  const checkBackend = async () => {
-    try {
-      const data = await fetch(`${backendUrl}/`);
-      const msg = await data.text();
-      console.log(msg);
-      setBackendStatus("ok");
-    } catch (error) {
-      console.log("Error waking signalling server up", error);
-      setBackendStatus("error");
+    async function verifyBackend() {
+      try {
+        const data = await fetch(`${backendUrl}/`);
+        const msg = await data.text();
+        console.log(msg);
+        if (!ignore) {
+          setBackendStatus("ok");
+        }
+      } catch (error) {
+        console.log("Error waking signalling server up", error);
+        if (!ignore) {
+          setBackendStatus("error");
+        }
+      }
     }
-  };
+
+    verifyBackend();
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const handleCreateRoom = () => {
     const newRoomId = generateString();
@@ -180,7 +189,7 @@ export default function Home() {
           {/* Create */}
           <div className="p-5 border-b border-[#141416]">
             <p className="text-[10px] text-zinc-700 tracking-[0.18em] uppercase mb-3">
-              // New Session
+              {"// New Session"}
             </p>
             <motion.button
               onClick={handleCreateRoom}
@@ -215,7 +224,7 @@ export default function Home() {
           {/* Join */}
           <div className="p-5">
             <p className="text-[10px] text-zinc-700 tracking-[0.18em] uppercase mb-3">
-              // Join Existing
+              {"// Join Existing"}
             </p>
             <div className="relative mb-3">
               <input
