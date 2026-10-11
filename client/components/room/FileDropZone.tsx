@@ -12,12 +12,15 @@ interface FileDropZoneProps {
 }
 
 export function FileDropZone({ status, roomId, onFileSelect, disabled = false }: FileDropZoneProps) {
-  const [isDragging, setIsDragging] = useState(false);
+  const [rawDragging, setRawDragging] = useState(false);
   const dragCounter = useRef(0);
 
+  const isEnabled = status === "connected" && !disabled;
+  const isDragging = rawDragging && isEnabled;
+
   useEffect(() => {
-    if (status !== "connected" || disabled) {
-      setIsDragging(false);
+    if (!isEnabled) {
+      dragCounter.current = 0;
       return;
     }
 
@@ -25,13 +28,16 @@ export function FileDropZone({ status, roomId, onFileSelect, disabled = false }:
       e.preventDefault();
       e.stopPropagation();
       dragCounter.current += 1;
-      if (dragCounter.current === 1) setIsDragging(true);
+      if (dragCounter.current === 1) setRawDragging(true);
     };
     const handleDragLeave = (e: DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
       dragCounter.current -= 1;
-      if (dragCounter.current === 0) setIsDragging(false);
+      if (dragCounter.current <= 0) {
+        dragCounter.current = 0;
+        setRawDragging(false);
+      }
     };
     const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
@@ -41,7 +47,7 @@ export function FileDropZone({ status, roomId, onFileSelect, disabled = false }:
       e.preventDefault();
       e.stopPropagation();
       dragCounter.current = 0;
-      setIsDragging(false);
+      setRawDragging(false);
       if (e.dataTransfer?.files && e.dataTransfer.files[0]) {
         onFileSelect(e.dataTransfer.files[0]);
       }
@@ -52,12 +58,14 @@ export function FileDropZone({ status, roomId, onFileSelect, disabled = false }:
     window.addEventListener("dragover", handleDragOver);
     window.addEventListener("drop", handleDrop);
     return () => {
+      dragCounter.current = 0;
+      setRawDragging(false);
       window.removeEventListener("dragenter", handleDragEnter);
       window.removeEventListener("dragleave", handleDragLeave);
       window.removeEventListener("dragover", handleDragOver);
       window.removeEventListener("drop", handleDrop);
     };
-  }, [status, disabled, onFileSelect]);
+  }, [isEnabled, onFileSelect]);
 
   const handleInputSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;

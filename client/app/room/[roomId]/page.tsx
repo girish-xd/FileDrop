@@ -53,19 +53,23 @@ export default function Page() {
   }, [isUploading, isDownloading, activeDownload]);
 
   useEffect(() => {
-    // Just to handle sudden quit
-    const handleUnload = () => {
+    // Notify peer on sudden tab close/navigation if transfer was active
+    const handleBeforeUnload = () => {
       const state = activeState.current;
       if (state.isUploading || state.isDownloading || state.activeDownload) {
         if (dataChannelRef.current?.readyState === "open") {
-          dataChannelRef.current.send(JSON.stringify({ type: "stream-abort" }));
+          try {
+            dataChannelRef.current.send(JSON.stringify({ type: "stream-abort" }));
+          } catch {
+            // Ignore synchronous send failures during page tear down
+          }
         }
       }
-      window.addEventListener("beforeunload", handleUnload);
-      return () => {
-        handleUnload;
-        window.removeEventListener("beforeunload", handleUnload);
-      };
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
 
